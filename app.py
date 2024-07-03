@@ -10,8 +10,8 @@ import logging
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-@app.route('/upload_csv', methods=['POST'])
-def upload_csv():
+@app.route('/proxy_post', methods=['POST'])
+def proxy_post():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part in the request'}), 400
 
@@ -31,14 +31,11 @@ def upload_csv():
         # Encode the bytes to base64
         df_base64 = base64.b64encode(df_bytes).decode('utf-8')
 
-        return jsonify({'dataframe': df_base64}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        # Prepare data for proxy POST request
+        data = {
+            'dataframe': df_base64
+        }
 
-@app.route('/proxy_post', methods=['POST'])
-def proxy_post():
-    data = request.json
-    try:
         response = requests.post(
             'https://chat2plot.azurewebsites.net/api/httptrigger1?code=0XEttLdbkBrUWJnHeToLisiYdvXlvTcCVpN9Uxu7KuauAzFuk_anPQ%3D%3D',
             json=data,
@@ -73,8 +70,5 @@ def proxy_get():
         logging.error(f"Error in proxy_get: {e}")
         return jsonify({'error': str(e)}), 500
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
